@@ -26,13 +26,13 @@ jobs:
     steps:
     - checkout
     - setup_remote_docker:
-        version: 20.10.7
+        version: docker24
         docker_layer_caching: true
 
     - run:
         name: Install cosign
         command: |
-          COSIGN_VERSION="v"
+          COSIGN_VERSION="v2.2.3"
           sudo wget https://github.com/sigstore/cosign/releases/download/${COSIGN_VERSION}/cosign-linux-amd64 -O cosign
           sudo chmod +x cosign
           sudo mv cosign /usr/local/bin/cosign
