@@ -45,6 +45,10 @@ jobs:
       - run:
           name: Build and push Docker image
           command: |
+<<<<<<< HEAD
+=======
+            LOWERCASE_REGISTRY=$(echo ${REGISTRY} | tr '[:upper:]' '[:lower:]')
+>>>>>>> 6854563 (removed redundant commands from cicleci pipeline)
             LOWERCASE_IMAGE_NAME=$(echo ${IMAGE_NAME} | tr '[:upper:]' '[:lower:]')
             docker build -t ${myrepository}/${LOWERCASE_IMAGE_NAME}:latest .
             docker push ${myrepository}/${LOWERCASE_IMAGE_NAME}:latest
