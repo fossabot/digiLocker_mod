@@ -26,7 +26,7 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker:
-          version: docker24
+          version: default
           docker_layer_caching: true
 
       - run:
