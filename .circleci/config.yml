@@ -1,0 +1,68 @@
+version: 2.1
+
+orbs:
+  docker: circleci/docker@2.1
+
+workflows:
+  version: 2
+  build-and-push:
+    jobs:
+    - build
+    - sign:
+        requires:
+        - build
+        filters:
+          branches:
+            only:
+            - main
+            - dev-2
+          tags:
+            only: /^v.*/
+
+jobs:
+  build:
+    docker:
+    - image: cimg/base:stable
+    steps:
+    - checkout
+    - setup_remote_docker:
+        version: 20.10.7
+        docker_layer_caching: true
+
+    - run:
+        name: Install cosign
+        command: |
+          COSIGN_VERSION="v"
+          sudo wget https://github.com/sigstore/cosign/releases/download/${COSIGN_VERSION}/cosign-linux-amd64 -O cosign
+          sudo chmod +x cosign
+          sudo mv cosign /usr/local/bin/cosign
+
+    - run:
+        name: Docker login
+        command: |
+          echo $DOCKER_PASSWORD | docker login ${REGISTRY} --username $DOCKER_USERNAME --password-stdin
+
+    - run:
+        name: Build and push Docker image
+        command: |
+          docker build -t ${REGISTRY}/${IMAGE_NAME}:latest .
+          docker push ${REGISTRY}/${IMAGE_NAME}:latest
+
+  sign:
+    docker:
+    - image: cimg/base:stable
+    steps:
+    - checkout
+
+    - run:
+        name: Install cosign
+        command: |
+          COSIGN_VERSION="v2.2.3"
+          sudo wget https://github.com/sigstore/cosign/releases/download/${COSIGN_VERSION}/cosign-linux-amd64 -O cosign
+          sudo chmod +x cosign
+          sudo mv cosign /usr/local/bin/cosign
+
+    - run:
+        name: Sign the published Docker image
+        command: |
+          cosign sign --yes ${REGISTRY}/${IMAGE_NAME}:latest
