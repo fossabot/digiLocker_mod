@@ -69,4 +69,3 @@ jobs:
           name: Sign the published Docker image
           command: |
             cosign sign --yes ${REGISTRY}/${IMAGE_NAME}:latest
-
