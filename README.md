@@ -6,27 +6,27 @@
 
 ## Disclaimer
 
-The original project belong to [Jai Singhal](https://www.linkedin.com/in/jai-singhal/) and the link to the original project is referenced [here](https://github.com/jai-singhal/digiLocker). I have only improved on the original project by making the following changes:
+The original project belongs to [Jai Singhal](https://www.linkedin.com/in/jai-singhal/) and the link to the original project is referenced [here](https://github.com/jai-singhal/digiLocker). I have only improved on the original project by making the following changes:
 
 1. Change the Test Network to Sepolia.
 2. Deployed the smart contract on **HardHat** wallet instead of the default **Truffle Wallet**.
-3. Introduced a new logic to auto-regenerate the __DropBox__ token if the supplied token had expired. This ensures a continous availability of the project and prevents breakage in the application functionality.
+3. Introduced a new logic to auto-regenerate the __DropBox__ token if the supplied token had expired. This ensures the continuous availability of the project and prevents breakage in the application functionality.
 4. Created a Dockerfile for building a docker image off the project for easy setup on different operating systems as well as integrating the application into other projects.
-5. Setup CI/CD for continuous deployment of the image upon every update made to the main branch.
+5. Set up CI/CD for continuous deployment of the image upon every update made to the main branch.
 
 ## How to setup
 
 ### Install the Metamask
 
-Download the metamask extension from: https://metamask.io/
+Download the Metamask extension from: https://metamask.io/
 
 ### Ethereum account and network
 
-We have used Sepolia Test network, and deployed the contract on the same network. So to run the application, you may required to get some free ethers from [here](https://sepoliafaucet.com/).
+We have used the Sepolia Test network and deployed the contract on the same network. So to run the application, you may required to get some free ethers from [here](https://sepoliafaucet.com/).
 
 ### Clone repository
 
-```powershell
+```PowerShell
 git clone https://github.com/Behordeun/digiLocker_mod.git
 
 # cd to digilocker_mod
@@ -37,7 +37,7 @@ cd digiLocker_mod
 
 The application works better on Python3.9. Hence, it's recommended that you have Python3.9 installed on your machine or you set it up using Docker
 
-```powershell
+```PowerShell
 pip install virtualenv
 
 # create virtualenv in digilocker dir
@@ -73,11 +73,11 @@ python main.py
 
 ![Requestor](https://i.imgur.com/QAuXW5V.png)
 
-### Auth Activity digram
+### Auth Activity diagram
 
 ![auth](https://i.imgur.com/SjtrkUV.png)
 
-### Document upload and permission Grant Activity digram
+### Document upload and permission Grant Activity diagram
 
 ![doc](https://i.imgur.com/LeaB6zf.png)
 
