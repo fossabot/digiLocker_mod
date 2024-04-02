@@ -45,8 +45,9 @@ jobs:
       - run:
           name: Build and push Docker image
           command: |
-            docker build -t ${myrepository}/${IMAGE_NAME}:latest .
-            docker push ${myrepository}/${IMAGE_NAME}:latest
+            LOWERCASE_IMAGE_NAME=$(echo ${IMAGE_NAME} | tr '[:upper:]' '[:lower:]')
+            docker build -t ${myrepository}/${LOWERCASE_IMAGE_NAME}:latest .
+            docker push ${myrepository}/${LOWERCASE_IMAGE_NAME}:latest
 
 
   sign:
