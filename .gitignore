@@ -27,11 +27,13 @@ build/
 tests/report/
 tcl/
 # Scripts/
+Scripts/
 get-pip.py
 include/
 temp/
 Databases/
 # *.json
+*.json
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -164,3 +166,4 @@ environment.yml
 .vscode/
 tmp.Dockerfile
 .trunk/
+
