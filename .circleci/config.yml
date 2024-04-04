@@ -69,5 +69,4 @@ jobs:
       - run:
           name: Sign the published Docker image
           command: |
-            cosign sign --yes ${REGISTRY}/${IMAGE_NAME}:latest
-
+            cosign sign --yes ${myrepository}/${LOWERCASE_IMAGE_NAME}:latest
