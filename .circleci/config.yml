@@ -52,7 +52,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-          - cosign-{{ .Environment.COSIGN_VERSION }}
+            - cosign-{{ .Environment.COSIGN_VERSION }}
       - run:
           name: Install Cosign if not cached
           command: |
@@ -65,14 +65,13 @@ jobs:
       - save_cache:
           key: cosign-{{ .Environment.COSIGN_VERSION }}
           paths:
-          - /usr/local/bin/cosign
+            - /usr/local/bin/cosign
       - run:
           name: Decode Cosign private key and sign the Docker image
           command: |
             echo $COSIGN_PRIVATE_KEY | base64 --decode > cosign.key
+            export COSIGN_PASSWORD=$COSIGN_PASSWORD
             cosign sign --key cosign.key $REGISTRY/$LOWERCASE_IMAGE_NAME:$UNIQUE_TAG
-          environment:
-            COSIGN_PASSWORD: $COSIGN_PASSWORD
 
 workflows:
   version: 2
