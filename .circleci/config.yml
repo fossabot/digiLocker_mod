@@ -28,6 +28,7 @@ jobs:
       - setup_remote_docker:
           version: default
           docker_layer_caching: true
+
       - run:
           name: Install cosign
           command: |
@@ -35,23 +36,27 @@ jobs:
             sudo wget https://github.com/sigstore/cosign/releases/download/${COSIGN_VERSION}/cosign-linux-amd64 -O cosign
             sudo chmod +x cosign
             sudo mv cosign /usr/local/bin/cosign
+
       - run:
           name: Docker login
           command: |
             echo $DOCKER_PASSWORD | docker login ${REGISTRY} --username $DOCKER_USERNAME --password-stdin
+
       - run:
           name: Build and push Docker image
           command: |
             LOWERCASE_REGISTRY=$(echo ${REGISTRY} | tr '[:upper:]' '[:lower:]')
             LOWERCASE_IMAGE_NAME=$(echo ${IMAGE_NAME} | tr '[:upper:]' '[:lower:]')
-            docker build -t ${LOWERCASE_REGISTRY}/${LOWERCASE_IMAGE_NAME}:latest .
-            docker push ${LOWERCASE_REGISTRY}/${LOWERCASE_IMAGE_NAME}:latest
+            docker build -t ${myrepository}/${LOWERCASE_IMAGE_NAME}:latest .
+            docker push ${myrepository}/${LOWERCASE_IMAGE_NAME}:latest
+
 
   sign:
     docker:
       - image: cimg/base:stable
     steps:
       - checkout
+
       - run:
           name: Install cosign
           command: |
@@ -59,9 +64,9 @@ jobs:
             sudo wget https://github.com/sigstore/cosign/releases/download/${COSIGN_VERSION}/cosign-linux-amd64 -O cosign
             sudo chmod +x cosign
             sudo mv cosign /usr/local/bin/cosign
+
       - run:
           name: Sign the published Docker image
           command: |
-            LOWERCASE_REGISTRY=$(echo ${REGISTRY} | tr '[:upper:]' '[:lower:]')
             LOWERCASE_IMAGE_NAME=$(echo ${IMAGE_NAME} | tr '[:upper:]' '[:lower:]')
-            cosign sign --yes ${LOWERCASE_REGISTRY}/${LOWERCASE_IMAGE_NAME}:latest
+            cosign sign --yes ${myrepository}/${LOWERCASE_IMAGE_NAME}:latest
