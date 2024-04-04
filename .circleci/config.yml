@@ -4,7 +4,7 @@ orbs:
   docker: circleci/docker@2.1
 
 jobs:
-  build:
+  build_and_push:
     docker:
       - image: cimg/base:stable
     steps:
@@ -17,13 +17,15 @@ jobs:
           command: |
             echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
       - run:
-          name: Build and push Docker image
+          name: Build and push Docker image, capture digest
           command: |
             LOWERCASE_IMAGE_NAME=$(echo $IMAGE_NAME | tr '[:upper:]' '[:lower:]')
             docker build -t $REGISTRY/$LOWERCASE_IMAGE_NAME:latest .
             docker push $REGISTRY/$LOWERCASE_IMAGE_NAME:latest
+            DIGEST=$(docker image inspect $REGISTRY/$LOWERCASE_IMAGE_NAME:latest --format='{{index .RepoDigests 0}}')
+            echo "export DIGEST='$DIGEST'" >> $BASH_ENV
 
-  scan:
+  scan_image:
     docker:
       - image: cimg/base:stable
     steps:
@@ -38,10 +40,9 @@ jobs:
       - run:
           name: Scan Docker image for vulnerabilities
           command: |
-            LOWERCASE_IMAGE_NAME=$(echo $IMAGE_NAME | tr '[:upper:]' '[:lower:]')
-            trivy image --severity HIGH,CRITICAL $REGISTRY/$LOWERCASE_IMAGE_NAME:latest
+            trivy image --severity HIGH,CRITICAL $DIGEST
 
-  sign:
+  sign_image:
     docker:
       - image: cimg/base:stable
     steps:
@@ -54,22 +55,19 @@ jobs:
             sudo chmod +x cosign
             sudo mv cosign /usr/local/bin/cosign
       - run:
-          name: Sign the published Docker image
+          name: Sign the Docker image with Cosign
           command: |
             echo $COSIGN_PRIVATE_KEY | base64 --decode > cosign.key
-            LOWERCASE_IMAGE_NAME=$(echo $IMAGE_NAME | tr '[:upper:]' '[:lower:]')
-            cosign sign --key cosign.key $REGISTRY/$LOWERCASE_IMAGE_NAME:latest
-          environment:
-            COSIGN_PASSWORD: ""
+            cosign sign --key cosign.key $DIGEST
 
 workflows:
   version: 2
-  build-scan-sign:
+  build_scan_sign_workflow:
     jobs:
-      - build
-      - scan:
+      - build_and_push
+      - scan_image:
           requires:
-            - build
-      - sign:
+            - build_and_push
+      - sign_image:
           requires:
-            - scan
+            - scan_image
