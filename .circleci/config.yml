@@ -20,27 +20,41 @@ jobs:
           docker_layer_caching: true
 
       - run:
-          name: Install cosign
+          name: Install Cosign
           command: |
             COSIGN_VERSION="v2.2.3"
-            sudo wget https://github.com/sigstore/cosign/releases/download/${COSIGN_VERSION}/cosign-linux-amd64 -O cosign
-            sudo chmod +x cosign
-            sudo mv cosign /usr/local/bin/cosign
+            sudo wget https://github.com/sigstore/cosign/releases/download/${COSIGN_VERSION}/cosign-linux-amd64 -O /usr/local/bin/cosign
+            sudo chmod +x /usr/local/bin/cosign
 
       - run:
-          name: Docker login
+          name: Generate Cosign keys
           command: |
-            echo $DOCKER_PASSWORD | docker login ${REGISTRY} --username $DOCKER_USERNAME --password-stdin
+            cosign generate-key-pair
+            mkdir -p $HOME/.cosign
+            mv cosign.key cosign.pub $HOME/.cosign/
+
+      - persist_to_workspace:
+          root: $HOME/.cosign
+          paths:
+            - .cosign/
 
       - run:
-          name: Build and push Docker image
+          name: Build Docker image
           command: |
             LOWERCASE_REGISTRY=$(echo ${REGISTRY} | tr '[:upper:]' '[:lower:]')
             LOWERCASE_IMAGE_NAME=$(echo ${IMAGE_NAME} | tr '[:upper:]' '[:lower:]')
             docker build -t ${myrepository}/${LOWERCASE_IMAGE_NAME}:latest .
-            docker push ${myrepository}/${LOWERCASE_IMAGE_NAME}:latest
 
       - run:
-          name: Sign the published Docker image
+          name: Push Docker image
           command: |
-            cosign sign --yes ${myrepository}/${LOWERCASE_IMAGE_NAME}:latest
+            docker login ${REGISTRY} -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+            docker push ${myrepository}/${LOWERCASE_IMAGE_NAME}:latest
+
+      - attach_workspace:
+          at: $HOME
+
+      - run:
+          name: Sign Docker image
+          command: |
+            cosign sign --key .cosign/cosign.key --cert .cosign/cosign.pub --context "fulcio" --yes ${myrepository}/${LOWERCASE_IMAGE_NAME}:latest
