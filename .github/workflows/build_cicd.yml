@@ -21,10 +21,8 @@ env:
   IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/${{ secrets.IMAGE_NAME }}
 
 jobs:
-  build-and-push:
+  build:
     runs-on: ubuntu-latest
-    outputs:
-      image-tag: ${{ steps.meta.outputs.tags }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -45,25 +43,30 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
       
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+      - name: Build Docker image
+        run: |
+          docker build -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} .
+      
+      - name: Push Docker image
+        run: |
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
-  scan:
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    steps:
       - name: Scan Docker image with Trivy
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ needs.build-and-push.outputs.image-tag }}
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           format: 'table'
           exit-code: '1'
           ignore-unfixed: true
+          vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3.1.1
+
+      - name: Sign Docker image with Cosign
+        run: |
+          echo "${{ secrets.COSIGN_PRIVATE_KEY }}" | base64 --decode > cosign.key
+          cosign sign --key cosign.key ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        env:
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
