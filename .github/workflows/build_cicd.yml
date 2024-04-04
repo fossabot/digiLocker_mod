@@ -26,9 +26,10 @@ jobs:
     permissions:
       contents: read
       packages: write
-      id-token: write
+      id-token: write # needed for signing the images with GitHub OIDC Token
     steps:
-      - uses: actions/checkout@v3.5.2
+      - name: Checkout repository
+        uses: actions/checkout@v3.5.2
         with:
           fetch-depth: 1
 
@@ -53,30 +54,27 @@ jobs:
         uses: docker/metadata-action@v4.4.0
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-      
+
       - name: Build and Push container images
         uses: docker/build-push-action@v4.0.0
         with:
           platforms: linux/amd64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
-
-      - name: Get the image digest
-        id: get-digest
-        run: |
-          digest=$(docker inspect --format='{{index .RepoDigests 0}}' ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }})
-          echo "::set-output name=digest::$digest"
-          echo "Digest: $digest"
       
       - name: Scan Docker image with Trivy
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ steps.get-digest.outputs.digest }}
+          image-ref: ${{ steps.meta.outputs.tags }}
           format: 'table'
           severity: 'CRITICAL,HIGH'
 
-      - name: Sign the image with digest
+      - name: Sign the images with GitHub OIDC Token (Non-interactive)
         run: |
-          cosign sign --oidc-issuer=https://token.actions.githubusercontent.com ${{ steps.get-digest.outputs.digest }}
+          IFS=',' read -ra ADDR <<< "${{ steps.meta.outputs.tags }}"
+          for tag in "${ADDR[@]}"; do
+            echo "Signing $tag"
+            cosign sign --oidc-issuer=https://token.actions.githubusercontent.com --yes "$tag"
+          done
         env:
           COSIGN_EXPERIMENTAL: "true"
