@@ -10,7 +10,7 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker:
-          docker_layer_caching: true
+          docker_layer_caching: true # Utilizes Docker layer caching
       - run:
           name: Docker login
           command: |
@@ -19,10 +19,11 @@ jobs:
           name: Build and push Docker image
           command: |
             LOWERCASE_IMAGE_NAME=$(echo $IMAGE_NAME | tr '[:upper:]' '[:lower:]')
-            UNIQUE_TAG=$(date +%Y%m%d%H%M%S)
+            # Use CircleCI build number for the tag
+            UNIQUE_TAG="build-${CIRCLE_BUILD_NUM}"
             docker build -t $REGISTRY/$LOWERCASE_IMAGE_NAME:$UNIQUE_TAG .
             docker push $REGISTRY/$LOWERCASE_IMAGE_NAME:$UNIQUE_TAG
-            echo "export UNIQUE_TAG='$UNIQUE_TAG'" >> $BASH_ENV
+            echo "Docker image pushed: $REGISTRY/$LOWERCASE_IMAGE_NAME:$UNIQUE_TAG"
 
   scan:
     docker:
@@ -30,16 +31,17 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install and Update Trivy DB
+          name: Install Trivy and Update DB
           command: |
-            sudo apt-get update && sudo apt-get install -y wget apt-transport-https gnupg lsb-release
-            wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
-            echo deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main | sudo tee /etc/apt/sources.list.d/trivy.list
             sudo apt-get update && sudo apt-get install -y trivy
             trivy image --download-db-only
+          # No direct caching for Trivy DB, but reducing redundant DB downloads
       - run:
           name: Scan Docker image for vulnerabilities
           command: |
+            # Re-use build number for the tag
+            LOWERCASE_IMAGE_NAME=$(echo $IMAGE_NAME | tr '[:upper:]' '[:lower:]')
+            UNIQUE_TAG="build-${CIRCLE_BUILD_NUM}"
             trivy image --severity HIGH,CRITICAL $REGISTRY/$LOWERCASE_IMAGE_NAME:$UNIQUE_TAG
 
   sign:
@@ -52,12 +54,16 @@ jobs:
           command: |
             echo $COSIGN_PRIVATE_KEY | base64 --decode > cosign.key
             export COSIGN_PASSWORD=$COSIGN_PASSWORD
-            COSIGN_VERSION="v2.2.3"
+            # Check if Cosign is cached
             if [ ! -f /usr/local/bin/cosign ]; then
+              COSIGN_VERSION="v2.2.3"
               wget https://github.com/sigstore/cosign/releases/download/${COSIGN_VERSION}/cosign-linux-amd64 -O cosign
               sudo chmod +x cosign
               sudo mv cosign /usr/local/bin/cosign
             fi
+            # Re-use build number for the tag
+            LOWERCASE_IMAGE_NAME=$(echo $IMAGE_NAME | tr '[:upper:]' '[:lower:]')
+            UNIQUE_TAG="build-${CIRCLE_BUILD_NUM}"
             cosign sign --key cosign.key $REGISTRY/$LOWERCASE_IMAGE_NAME:$UNIQUE_TAG
 
 workflows:
