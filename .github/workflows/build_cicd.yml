@@ -23,6 +23,8 @@ env:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tags }} # Define an output for the job
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -60,7 +62,7 @@ jobs:
       - name: Scan Docker image with Trivy
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: '${{ needs.build-and-push.outputs.REGISTRY_IMAGE }}'
+          image-ref: ${{ needs.build-and-push.outputs.image-tag }} # Use the output from the build-and-push job
           format: 'table'
           exit-code: '1'
           ignore-unfixed: true
@@ -79,7 +81,6 @@ jobs:
       - name: Sign Docker image with Cosign
         run: |
           echo "${{ secrets.COSIGN_PRIVATE_KEY }}" | base64 --decode > cosign.key
-          TAGS="${{ needs.build-and-push.outputs.REGISTRY_IMAGE }}"
-          cosign sign --key cosign.key $TAGS
+          cosign sign --key cosign.key ${{ needs.build-and-push.outputs.image-tag }} # Use the output from the build-and-push job
         env:
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
