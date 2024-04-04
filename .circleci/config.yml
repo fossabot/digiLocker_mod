@@ -40,7 +40,7 @@ jobs:
       - run:
           name: Scan Docker image for vulnerabilities
           command: |
-            trivy image --severity HIGH,CRITICAL $REGISTRY/$LOWERCASE_IMAGE_NAME:$DIGEST
+            trivy image --severity HIGH,CRITICAL "$REGISTRY/$LOWERCASE_IMAGE_NAME@sha256:<DIGEST>"
 
   sign_image:
     docker:
