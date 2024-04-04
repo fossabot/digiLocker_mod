@@ -53,7 +53,8 @@ pip
 protobuf==3.13.0
 pycparser==2.20
 pycryptodomex
-pycryptodome==3.9.7
+#pycryptodome==3.9.7
+pycryptodome
 PyJWT==1.7.1
 # pypiwin32==223
 pyrsistent==0.16.0
