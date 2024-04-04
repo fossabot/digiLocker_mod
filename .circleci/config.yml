@@ -16,6 +16,7 @@ workflows:
               only:
                 - main
                 - dev-2
+                - circleci-project-setup
             tags:
               only: /^v.*/
 
