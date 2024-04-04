@@ -38,7 +38,6 @@ jobs:
       - run:
           name: Scan Docker image for vulnerabilities
           command: |
-            LOWERCASE_IMAGE_NAME=$(echo $IMAGE_NAME | tr '[:upper:]' '[:lower:]')
             trivy image --severity HIGH,CRITICAL $REGISTRY/$LOWERCASE_IMAGE_NAME:latest
 
   sign:
@@ -54,10 +53,11 @@ jobs:
             sudo chmod +x cosign
             sudo mv cosign /usr/local/bin/cosign
       - run:
-          name: Sign the published Docker image
+          name: Decode Cosign private key and sign the Docker image
           command: |
+            echo $COSIGN_PRIVATE_KEY | base64 --decode > cosign.key
             LOWERCASE_IMAGE_NAME=$(echo $IMAGE_NAME | tr '[:upper:]' '[:lower:]')
-            cosign sign --yes $REGISTRY/$LOWERCASE_IMAGE_NAME:latest
+            cosign sign --key cosign.key $REGISTRY/$LOWERCASE_IMAGE_NAME:latest
 
 workflows:
   version: 2
