@@ -41,11 +41,35 @@ jobs:
             LOWERCASE_IMAGE_NAME=$(echo $IMAGE_NAME | tr '[:upper:]' '[:lower:]')
             trivy image --severity HIGH,CRITICAL $REGISTRY/$LOWERCASE_IMAGE_NAME:latest
 
+  sign:
+    docker:
+      - image: cimg/base:stable
+    environment:
+      COSIGN_PASSWORD: $COSIGN_PASSWORD
+    steps:
+      - checkout
+      - run:
+          name: Install Cosign
+          command: |
+            COSIGN_VERSION="v1.3.0"
+            wget https://github.com/sigstore/cosign/releases/download/$COSIGN_VERSION/cosign-linux-amd64 -O cosign
+            chmod +x cosign
+            sudo mv cosign /usr/local/bin/
+      - run:
+          name: Sign the Docker image
+          command: |
+            LOWERCASE_IMAGE_NAME=$(echo $IMAGE_NAME | tr '[:upper:]' '[:lower:]')
+            echo "Signing image $REGISTRY/$LOWERCASE_IMAGE_NAME:latest"
+            echo $COSIGN_PASSWORD | cosign sign --key cosign.key $REGISTRY/$LOWERCASE_IMAGE_NAME:latest
+
 workflows:
   version: 2
-  build-scan:
+  build-scan-sign:
     jobs:
       - build
       - scan:
           requires:
             - build
+      - sign:
+          requires:
+            - scan
