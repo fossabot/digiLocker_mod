@@ -44,10 +44,12 @@ jobs:
   sign:
     docker:
       - image: cimg/base:stable
-    environment:
-      COSIGN_PASSWORD: $COSIGN_PASSWORD
     steps:
       - checkout
+      - run:
+          name: Decode Cosign Private Key
+          command: |
+            echo $COSIGN_PRIVATE_KEY | base64 --decode > ./cosign.key
       - run:
           name: Install Cosign
           command: |
@@ -60,7 +62,8 @@ jobs:
           command: |
             LOWERCASE_IMAGE_NAME=$(echo $IMAGE_NAME | tr '[:upper:]' '[:lower:]')
             echo "Signing image $REGISTRY/$LOWERCASE_IMAGE_NAME:latest"
-            echo $COSIGN_PASSWORD | cosign sign --key cosign.key $REGISTRY/$LOWERCASE_IMAGE_NAME:latest
+            COSIGN_PASSWORD=$COSIGN_PASSWORD cosign sign --key ./cosign.key $REGISTRY/$LOWERCASE_IMAGE_NAME:latest
+
 
 workflows:
   version: 2
