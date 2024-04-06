@@ -1,6 +1,7 @@
 # Digital Locker using Ethereum Blockchain
 
-[![Docker](https://github.com/Behordeun/digiLocker_mod/actions/workflows/build_cicd.yml/badge.svg)](https://github.com/Behordeun/digiLocker_mod/actions/workflows/build_cicd.yml)  [![CircleCI](https://dl.circleci.com/status-badge/img/gh/Behordeun/digiLocker_mod/tree/dev-2.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/Behordeun/digiLocker_mod/tree/dev-2)  [![wakatime](https://wakatime.com/badge/user/e47dea41-8692-44e5-bd23-27b3544ed664/project/018b9bf5-3291-411c-9653-865e61cc89cb.svg)](https://wakatime.com/badge/user/e47dea41-8692-44e5-bd23-27b3544ed664/project/018b9bf5-3291-411c-9653-865e61cc89cb)
+[![Docker](https://github.com/Behordeun/digiLocker_mod/actions/workflows/build_cicd.yml/badge.svg)](https://github.com/Behordeun/digiLocker_mod/actions/workflows/build_cicd.yml) [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FBehordeun%2FdigiLocker_mod.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FBehordeun%2FdigiLocker_mod?ref=badge_shield)
+ [![CircleCI](https://dl.circleci.com/status-badge/img/gh/Behordeun/digiLocker_mod/tree/dev-2.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/Behordeun/digiLocker_mod/tree/dev-2)  [![wakatime](https://wakatime.com/badge/user/e47dea41-8692-44e5-bd23-27b3544ed664/project/018b9bf5-3291-411c-9653-865e61cc89cb.svg)](https://wakatime.com/badge/user/e47dea41-8692-44e5-bd23-27b3544ed664/project/018b9bf5-3291-411c-9653-865e61cc89cb)
 
 ## Disclaimer
 
@@ -110,3 +111,7 @@ APPCONFIG = {
     "PRIVATE_KEY":"your-metamask-wallet-private-key"
 }
 ```
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FBehordeun%2FdigiLocker_mod.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FBehordeun%2FdigiLocker_mod?ref=badge_large)
